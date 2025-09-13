@@ -1,0 +1,27 @@
+# AILANG Language Grammar Specification (BNF) v2.3
+# ==============================================
+# Verb-First, Cache-Aware, Pool-Optimized Systems Language
+# Updated: Advanced Math & Bit Primitives (50 total)
+
+# ==============================================
+# MATH & BIT PRIMITIVES (50)
+# ==============================================
+
+<math_function> ::= "SquareRoot" | "AbsoluteValue"
+                  | "Floor" | "Ceil" | "Round" | "RoundEven" | "Trunc" | "Frac"
+                  | "Min" | "Max" | "Clamp" | "Saturate" | "Sign"
+                  | "FloorDivide" | "Remainder" | "DivMod"
+                  | "FusedMultiplyAdd" | "Hypotenuse" | "Lerp"
+                  | "DegToRad" | "RadToDeg"
+                  | "Sin" | "Cos" | "Tan" | "Asin" | "Acos" | "Atan" | "Atan2"
+                  | "Tanh"
+                  | "Exp" | "Expm1" | "Exp2"
+                  | "Log" | "Log1p" | "Log2" | "Log10"
+                  | "NextAfter" | "Frexp" | "Ldexp" | "NearlyEqual"
+                  | "PopCount" | "CountLeadingZeros" | "CountTrailingZeros"
+                  | "RotateLeft" | "RotateRight"
+                  | "ByteSwap" | "BitReverse"
+                  | "AlignUp" | "AlignDown" | "IsPowerOfTwo" | "NextPowerOfTwo" | "FloorLog2"
+
+# (Optional) allow some to bind like * and /
+<multiplicative_operator> ::= "Multiply" | "Divide" | "FloorDivide" | "Remainder"
