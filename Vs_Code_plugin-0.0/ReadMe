@@ -1,0 +1,9 @@
+📦 Node Modules
+
+This extension uses standard Node.js dependencies managed via package.json.
+
+Run npm install to generate node_modules/.
+
+Do not commit node_modules/ — it’s auto-generated and excluded via .gitignore.
+
+When packaging with vsce, only the necessary runtime modules are bundled into the .vsix.
