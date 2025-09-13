@@ -45,6 +45,9 @@ AILANG supports:
 
 ---
 
+
+Currently plug-in is in the refactor phase and redesign. contributors wanted. 
+
 *Born from raw anger at C++ and built by humans and AI working together.* 🚀
 
 **Repository:** [GitHub](https://github.com/your-username/ailang)
