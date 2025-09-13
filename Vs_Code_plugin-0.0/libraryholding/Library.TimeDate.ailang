@@ -1,0 +1,704 @@
+// ============================================================================
+// AILANG Unified Time & Date Library - PURE AILANG SYNTAX
+// High-Performance Cache-Aware Temporal Operations
+// REWRITTEN: All C/C++ contamination removed
+// ============================================================================
+
+// Cache-Optimized Memory Pools for High-Performance Time Operations
+
+FixedPool.Time.Core {
+    "timestamps": ElementType-Timestamp, MaximumLength-1000000,
+    "datetime_objects": ElementType-DateTime, MaximumLength-1000000,
+    "durations": ElementType-Duration, MaximumLength-100000,
+    "cache_alignment": Initialize-64, CanChange-False
+}
+
+FixedPool.Time.Timers {
+    "timer_handles": ElementType-TimerHandle, MaximumLength-100000,
+    "timer_callbacks": ElementType-Function, MaximumLength-100000,
+    "timer_queue": ElementType-Address, CanChange-True,
+    "cache_policy": Initialize-"L2", CanChange-False
+}
+
+DynamicPool.Time.Scheduling {
+    "scheduled_tasks": ElementType-ScheduledTask, MaximumLength-1000000,
+    "cron_jobs": ElementType-CronJob, MaximumLength-100000,
+    "task_queue": ElementType-Address, CanChange-True,
+    "priority_queue": ElementType-Address, CanChange-True
+}
+
+FixedPool.Time.Zones {
+    "timezone_data": ElementType-TimezoneInfo, MaximumLength-1000,
+    "dst_rules": ElementType-DSTRule, MaximumLength-10000,
+    "zone_cache": ElementType-Address, MaximumLength-10000,
+    "cache_lifetime": Initialize-"24_hours", CanChange-False
+}
+
+FixedPool.Time.Performance {
+    "benchmarks": ElementType-BenchmarkResult, MaximumLength-100000,
+    "profiling_data": ElementType-ProfileData, MaximumLength-1000000,
+    "timing_samples": ElementType-UInt64, MaximumLength-10000000,
+    "cache_stats": ElementType-CacheStats, MaximumLength-1000000
+}
+
+TemporalPool.Time.Formatting {
+    "formatted_strings": ElementType-Text, MaximumLength-100000,
+    "parse_cache": ElementType-DateTime, MaximumLength-10000,
+    "lifetime": Initialize-"1_hour", CanChange-False
+}
+
+// ============================================================================
+// Core Data Types (Clean AILang Record Definitions)
+// ============================================================================
+
+Record.Timestamp {
+    seconds: UInt64,
+    nanoseconds: UInt32,
+    timezone_offset: Integer,
+    timezone_name: Text,
+    cache_line_padding: Array[UInt8, 32]
+}
+
+Record.DateTime {
+    year: UInt32,
+    month: UInt8,
+    day: UInt8,
+    hour: UInt8,
+    minute: UInt8,
+    second: UInt8,
+    nanosecond: UInt32,
+    weekday: UInt8,
+    yearday: UInt16,
+    timezone_offset: Integer,
+    timezone_name: Text,
+    unix_timestamp: UInt64,
+    is_dst: Boolean,
+    is_leap_year: Boolean
+}
+
+Record.Duration {
+    seconds: UInt64,
+    nanoseconds: UInt32
+}
+
+Record.TimerHandle {
+    id: UInt64,
+    duration_ms: UInt64,
+    callback: Function,
+    callback_data: Any,
+    trigger_time: Timestamp,
+    interval: OptionalType[Duration],
+    active: Boolean,
+    one_shot: Boolean,
+    repeat: Boolean,
+    running: Boolean,
+    created_at: UInt64,
+    next_trigger: UInt64,
+    trigger_count: UInt64,
+    priority: UInt8
+}
+
+Record.ScheduledTask {
+    id: UInt64,
+    task: Function,
+    task_data: Any,
+    schedule_time: DateTime,
+    scheduled_time: Timestamp,
+    unix_schedule_time: UInt64,
+    repeat_interval: OptionalType[Duration],
+    max_executions: OptionalType[UInt32],
+    execution_count: UInt32,
+    priority: UInt8,
+    recurring: Boolean,
+    enabled: Boolean
+}
+
+Record.CronJob {
+    id: UInt64,
+    expression: Text,
+    task: Function,
+    task_data: Any,
+    next_run: DateTime,
+    next_run_timestamp: Timestamp,
+    last_run: OptionalType[DateTime],
+    execution_count: UInt64,
+    enabled: Boolean,
+    parsed_expression: CronExpression
+}
+
+Record.CronExpression {
+    second: CronField,
+    minute: CronField,
+    hour: CronField,
+    day: CronField,
+    month: CronField,
+    weekday: CronField
+}
+
+Record.CronField {
+    type: Text,
+    values: Array[UInt8],
+    step: UInt8,
+    min_value: UInt8,
+    max_value: UInt8
+}
+
+Record.TimezoneInfo {
+    name: Text,
+    abbreviation: Text,
+    utc_offset: Integer,
+    dst_rules: Array[DSTRule],
+    cache_expiry: UInt64
+}
+
+Record.DSTRule {
+    start_month: UInt8,
+    start_week: UInt8,
+    start_day: UInt8,
+    start_time: UInt32,
+    end_month: UInt8,
+    end_week: UInt8,
+    end_day: UInt8,
+    end_time: UInt32,
+    offset_minutes: Integer
+}
+
+Record.BenchmarkResult {
+    name: Text,
+    iterations: UInt64,
+    total_time_ns: UInt64,
+    avg_time_ns: UInt64,
+    min_time_ns: UInt64,
+    max_time_ns: UInt64,
+    memory_usage: UInt64,
+    cache_misses: UInt64,
+    cache_hits: UInt64
+}
+
+Record.ProfileData {
+    function_name: Text,
+    call_count: UInt64,
+    total_time_ns: UInt64,
+    self_time_ns: UInt64,
+    avg_time_ns: UInt64,
+    cache_efficiency: FloatingPoint
+}
+
+Record.CacheStats {
+    l1_hits: UInt64,
+    l1_misses: UInt64,
+    l2_hits: UInt64,
+    l2_misses: UInt64,
+    l3_hits: UInt64,
+    l3_misses: UInt64
+}
+
+// ============================================================================
+// Core Time Functions (Pure AILang Syntax - No C/C++ Contamination)
+// ============================================================================
+
+Function.Time.Now {
+    Output: Timestamp
+    Body: {
+        Pool.Time.Core.Allocate(current_timestamp)
+        
+        current_timestamp.seconds = HardwareRegister("RTC", "read")
+        current_timestamp.nanoseconds = HardwareRegister("TSC", "read")
+        current_timestamp.timezone_offset = Time.GetSystemTimezoneOffset
+        current_timestamp.timezone_name = Time.GetSystemTimezoneName
+        
+        ReturnValue(current_timestamp)
+    }
+}
+
+Function.Time.NowDateTime {
+    Output: DateTime
+    Body: {
+        Pool.Time.Core.Allocate(current_datetime)
+        
+        unix_timestamp = HardwareRegister("RTC", "read")
+        nanosecond_component = HardwareRegister("TSC", "read")
+        
+        current_datetime.unix_timestamp = unix_timestamp
+        current_datetime.nanosecond = nanosecond_component
+        
+        // Convert Unix timestamp to broken-down time
+        current_datetime.year = Time.Internal.ExtractYear unix_timestamp
+        current_datetime.month = Time.Internal.ExtractMonth unix_timestamp
+        current_datetime.day = Time.Internal.ExtractDay unix_timestamp
+        current_datetime.hour = Time.Internal.ExtractHour unix_timestamp
+        current_datetime.minute = Time.Internal.ExtractMinute unix_timestamp
+        current_datetime.second = Time.Internal.ExtractSecond unix_timestamp
+        
+        // Calculate derived fields
+        current_datetime.weekday = Time.Internal.CalculateWeekday current_datetime
+        current_datetime.yearday = Time.Internal.CalculateYearDay current_datetime
+        current_datetime.is_leap_year = Time.IsLeapYear current_datetime.year
+        
+        // Get timezone information
+        timezone_information = Time.Timezone.GetLocal
+        current_datetime.timezone_offset = timezone_information.utc_offset
+        current_datetime.timezone_name = timezone_information.name
+        current_datetime.is_dst = Time.Timezone.IsDST current_datetime timezone_information
+        
+        ReturnValue(current_datetime)
+    }
+}
+
+Function.Time.Unix {
+    Output: UInt64
+    Body: {
+        ReturnValue(HardwareRegister("RTC", "read"))
+    }
+}
+
+Function.Time.UnixMilli {
+    Output: UInt64
+    Body: {
+        unix_seconds = HardwareRegister("RTC", "read")
+        millisecond_component = HardwareRegister("TSC_MILLI", "read")
+        
+        ReturnValue(Add(Multiply(unix_seconds, 1000), millisecond_component))
+    }
+}
+
+Function.Time.UnixNano {
+    Output: UInt64
+    Body: {
+        unix_seconds = HardwareRegister("RTC", "read")
+        nanosecond_component = HardwareRegister("TSC", "read")
+        
+        ReturnValue(Add(Multiply(unix_seconds, 1000000000), nanosecond_component))
+    }
+}
+
+Function.Time.Create {
+    Input: (
+        year: UInt32,
+        month: UInt8,
+        day: UInt8,
+        hour: UInt8 = 0,
+        minute: UInt8 = 0,
+        second: UInt8 = 0,
+        nanosecond: UInt32 = 0,
+        timezone: Text = "UTC"
+    )
+    Output: DateTime
+    Body: {
+        Pool.Time.Core.Allocate(new_datetime)
+        
+        new_datetime.year = year
+        new_datetime.month = month
+        new_datetime.day = day
+        new_datetime.hour = hour
+        new_datetime.minute = minute
+        new_datetime.second = second
+        new_datetime.nanosecond = nanosecond
+        
+        // Validate date components
+        IfCondition Not(Time.Internal.ValidateDate new_datetime) ThenBlock {
+            TryBlock: {} CatchError.InvalidDate {
+                PrintMessage("Invalid date components")
+                ReturnValue(Time.NowDateTime)
+            }
+        }
+        
+        // Calculate derived fields
+        new_datetime.is_leap_year = Time.IsLeapYear year
+        new_datetime.yearday = Time.Internal.CalculateYearDay new_datetime
+        new_datetime.weekday = Time.Internal.CalculateWeekday new_datetime
+        
+        // Set timezone information
+        timezone_info = Time.Timezone.Get timezone
+        new_datetime.timezone_offset = timezone_info.utc_offset
+        new_datetime.timezone_name = timezone_info.name
+        new_datetime.is_dst = Time.Timezone.IsDST new_datetime timezone_info
+        
+        // Calculate Unix timestamp
+        new_datetime.unix_timestamp = Time.Internal.DateTimeToUnix new_datetime
+        
+        ReturnValue(new_datetime)
+    }
+}
+
+Function.Time.FromUnix {
+    Input: (unix_timestamp: UInt64, timezone: Text = "UTC")
+    Output: DateTime
+    Body: {
+        Pool.Time.Core.Allocate(converted_datetime)
+        
+        converted_datetime.unix_timestamp = unix_timestamp
+        converted_datetime.nanosecond = 0
+        
+        // Convert to broken-down time using pure AILang approach
+        converted_datetime.year = Time.Internal.ExtractYear unix_timestamp
+        converted_datetime.month = Time.Internal.ExtractMonth unix_timestamp
+        converted_datetime.day = Time.Internal.ExtractDay unix_timestamp
+        converted_datetime.hour = Time.Internal.ExtractHour unix_timestamp
+        converted_datetime.minute = Time.Internal.ExtractMinute unix_timestamp
+        converted_datetime.second = Time.Internal.ExtractSecond unix_timestamp
+        
+        // Set timezone
+        timezone_info = Time.Timezone.Get timezone
+        converted_datetime.timezone_offset = timezone_info.utc_offset
+        converted_datetime.timezone_name = timezone_info.name
+        converted_datetime.is_dst = Time.Timezone.IsDST converted_datetime timezone_info
+        converted_datetime.is_leap_year = Time.IsLeapYear converted_datetime.year
+        
+        ReturnValue(converted_datetime)
+    }
+}
+
+// ============================================================================
+// Duration Operations (Clean AILang Functional Style)
+// ============================================================================
+
+Function.Time.Duration.Create {
+    Input: (seconds: UInt64, nanoseconds: UInt32 = 0)
+    Output: Duration
+    Body: {
+        Pool.Time.Core.Allocate(new_duration)
+        
+        // Normalize nanoseconds
+        extra_seconds = Divide(nanoseconds, 1000000000)
+        normalized_nanoseconds = Modulo(nanoseconds, 1000000000)
+        
+        new_duration.seconds = Add(seconds, extra_seconds)
+        new_duration.nanoseconds = normalized_nanoseconds
+        
+        ReturnValue(new_duration)
+    }
+}
+
+Function.Time.Duration.Add {
+    Input: (duration1: Duration, duration2: Duration)
+    Output: Duration
+    Body: {
+        total_seconds = Add(duration1.seconds, duration2.seconds)
+        total_nanoseconds = Add(duration1.nanoseconds, duration2.nanoseconds)
+        
+        // Handle nanosecond overflow
+        IfCondition GreaterEqual(total_nanoseconds, 1000000000) ThenBlock {
+            total_seconds = Add(total_seconds, 1)
+            total_nanoseconds = Subtract(total_nanoseconds, 1000000000)
+        }
+        
+        ReturnValue(Time.Duration.Create(total_seconds, total_nanoseconds))
+    }
+}
+
+Function.Time.Duration.Subtract {
+    Input: (duration1: Duration, duration2: Duration)
+    Output: Duration
+    Body: {
+        d1_total_nanos = Add(Multiply(duration1.seconds, 1000000000), duration1.nanoseconds)
+        d2_total_nanos = Add(Multiply(duration2.seconds, 1000000000), duration2.nanoseconds)
+        
+        IfCondition LessThan(d1_total_nanos, d2_total_nanos) ThenBlock {
+            ReturnValue(Time.Duration.Create(0, 0))
+        }
+        
+        difference_nanos = Subtract(d1_total_nanos, d2_total_nanos)
+        result_seconds = Divide(difference_nanos, 1000000000)
+        result_nanoseconds = Modulo(difference_nanos, 1000000000)
+        
+        ReturnValue(Time.Duration.Create(result_seconds, result_nanoseconds))
+    }
+}
+
+Function.Time.Duration.TotalMilliseconds {
+    Input: (duration: Duration)
+    Output: UInt64
+    Body: {
+        milliseconds_from_seconds = Multiply(duration.seconds, 1000)
+        milliseconds_from_nanos = Divide(duration.nanoseconds, 1000000)
+        
+        ReturnValue(Add(milliseconds_from_seconds, milliseconds_from_nanos))
+    }
+}
+
+Function.Time.Duration.TotalSeconds {
+    Input: (duration: Duration)
+    Output: FloatingPoint
+    Body: {
+        seconds_from_nanos = Divide(duration.nanoseconds, 1000000000.0)
+        ReturnValue(Add(duration.seconds, seconds_from_nanos))
+    }
+}
+
+// ============================================================================
+// Timestamp Operations (Pure Functional AILang)
+// ============================================================================
+
+Function.Time.Timestamp.Add {
+    Input: (timestamp: Timestamp, duration: Duration)
+    Output: Timestamp
+    Body: {
+        Pool.Time.Core.Allocate(result_timestamp)
+        result_timestamp.timezone_offset = timestamp.timezone_offset
+        result_timestamp.timezone_name = timestamp.timezone_name
+        
+        total_nanoseconds = Add(timestamp.nanoseconds, duration.nanoseconds)
+        extra_seconds = Divide(total_nanoseconds, 1000000000)
+        
+        result_timestamp.seconds = Add(Add(timestamp.seconds, duration.seconds), extra_seconds)
+        result_timestamp.nanoseconds = Modulo(total_nanoseconds, 1000000000)
+        
+        ReturnValue(result_timestamp)
+    }
+}
+
+Function.Time.Timestamp.Subtract {
+    Input: (timestamp1: Timestamp, timestamp2: Timestamp)
+    Output: Duration
+    Body: {
+        t1_total_nanos = Add(Multiply(timestamp1.seconds, 1000000000), timestamp1.nanoseconds)
+        t2_total_nanos = Add(Multiply(timestamp2.seconds, 1000000000), timestamp2.nanoseconds)
+        
+        IfCondition LessThan(t1_total_nanos, t2_total_nanos) ThenBlock {
+            ReturnValue(Time.Duration.Create(0, 0))
+        }
+        
+        difference_nanos = Subtract(t1_total_nanos, t2_total_nanos)
+        duration_seconds = Divide(difference_nanos, 1000000000)
+        duration_nanoseconds = Modulo(difference_nanos, 1000000000)
+        
+        ReturnValue(Time.Duration.Create(duration_seconds, duration_nanoseconds))
+    }
+}
+
+// ============================================================================
+// Utility Functions (Clean AILang Internal Functions)
+// ============================================================================
+
+Function.Time.IsLeapYear {
+    Input: (year: UInt32)
+    Output: Boolean
+    Body: {
+        divisible_by_4 = EqualTo(Modulo(year, 4), 0)
+        divisible_by_100 = EqualTo(Modulo(year, 100), 0)
+        divisible_by_400 = EqualTo(Modulo(year, 400), 0)
+        
+        IfCondition divisible_by_400 ThenBlock {
+            ReturnValue(True)
+        } ElseBlock {
+            IfCondition And(divisible_by_4, Not(divisible_by_100)) ThenBlock {
+                ReturnValue(True)
+            } ElseBlock {
+                ReturnValue(False)
+            }
+        }
+    }
+}
+
+Function.Time.GetSystemTimezoneOffset {
+    Output: Integer
+    Body: {
+        ReturnValue(HardwareRegister("TIMEZONE_OFFSET", "read"))
+    }
+}
+
+Function.Time.GetSystemTimezoneName {
+    Output: Text
+    Body: {
+        ReturnValue(HardwareRegister("TIMEZONE_NAME", "read"))
+    }
+}
+
+// ============================================================================
+// Internal Time Conversion Functions (Pure AILang Implementation)
+// ============================================================================
+
+Function.Time.Internal.ExtractYear {
+    Input: (unix_timestamp: UInt64)
+    Output: UInt32
+    Body: {
+        // Days since Unix epoch
+        days = Divide(unix_timestamp, 86400)
+        
+        // Start from 1970 and count forward
+        current_year = 1970
+        days_remaining = days
+        
+        WhileLoop GreaterThan(days_remaining, 0) {
+            year_days = IfCondition Time.IsLeapYear(current_year) ThenBlock {
+                366
+            } ElseBlock {
+                365
+            }
+            
+            IfCondition GreaterEqual(days_remaining, year_days) ThenBlock {
+                days_remaining = Subtract(days_remaining, year_days)
+                current_year = Add(current_year, 1)
+            } ElseBlock {
+                BreakLoop
+            }
+        }
+        
+        ReturnValue(current_year)
+    }
+}
+
+Function.Time.Internal.ExtractMonth {
+    Input: (unix_timestamp: UInt64)
+    Output: UInt8
+    Body: {
+        year = Time.Internal.ExtractYear unix_timestamp
+        days = Divide(unix_timestamp, 86400)
+        
+        // Calculate days since start of year
+        year_start_days = Time.Internal.DaysSinceEpochForYear year
+        days_in_year = Subtract(days, year_start_days)
+        
+        // Month lengths (non-leap year)
+        month_days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+        
+        // Adjust February for leap year
+        IfCondition Time.IsLeapYear(year) ThenBlock {
+            month_days[1] = 29
+        }
+        
+        current_month = 1
+        days_counted = 0
+        
+        ForEvery month_length in month_days {
+            IfCondition LessThan(days_in_year, Add(days_counted, month_length)) ThenBlock {
+                ReturnValue(current_month)
+            }
+            days_counted = Add(days_counted, month_length)
+            current_month = Add(current_month, 1)
+        }
+        
+        ReturnValue(12)
+    }
+}
+
+Function.Time.Internal.ExtractDay {
+    Input: (unix_timestamp: UInt64)
+    Output: UInt8
+    Body: {
+        year = Time.Internal.ExtractYear unix_timestamp
+        month = Time.Internal.ExtractMonth unix_timestamp
+        days = Divide(unix_timestamp, 86400)
+        
+        // Calculate days since start of month
+        month_start_days = Time.Internal.DaysSinceEpochForMonth year month
+        day_in_month = Subtract(days, month_start_days)
+        
+        ReturnValue(Add(day_in_month, 1))
+    }
+}
+
+Function.Time.Internal.ExtractHour {
+    Input: (unix_timestamp: UInt64)
+    Output: UInt8
+    Body: {
+        seconds_in_day = Modulo(unix_timestamp, 86400)
+        hour = Divide(seconds_in_day, 3600)
+        ReturnValue(hour)
+    }
+}
+
+Function.Time.Internal.ExtractMinute {
+    Input: (unix_timestamp: UInt64)
+    Output: UInt8
+    Body: {
+        seconds_in_hour = Modulo(unix_timestamp, 3600)
+        minute = Divide(seconds_in_hour, 60)
+        ReturnValue(minute)
+    }
+}
+
+Function.Time.Internal.ExtractSecond {
+    Input: (unix_timestamp: UInt64)
+    Output: UInt8
+    Body: {
+        second = Modulo(unix_timestamp, 60)
+        ReturnValue(second)
+    }
+}
+
+Function.Time.Internal.ValidateDate {
+    Input: (datetime: DateTime)
+    Output: Boolean
+    Body: {
+        // Check month range
+        IfCondition Or(LessThan(datetime.month, 1), GreaterThan(datetime.month, 12)) ThenBlock {
+            ReturnValue(False)
+        }
+        
+        // Check day range
+        max_days = Time.Internal.DaysInMonth datetime.year datetime.month
+        IfCondition Or(LessThan(datetime.day, 1), GreaterThan(datetime.day, max_days)) ThenBlock {
+            ReturnValue(False)
+        }
+        
+        // Check hour range
+        IfCondition GreaterThan(datetime.hour, 23) ThenBlock {
+            ReturnValue(False)
+        }
+        
+        // Check minute range
+        IfCondition GreaterThan(datetime.minute, 59) ThenBlock {
+            ReturnValue(False)
+        }
+        
+        // Check second range
+        IfCondition GreaterThan(datetime.second, 59) ThenBlock {
+            ReturnValue(False)
+        }
+        
+        ReturnValue(True)
+    }
+}
+
+Function.Time.Internal.CalculateWeekday {
+    Input: (datetime: DateTime)
+    Output: UInt8
+    Body: {
+        // Zeller's congruence algorithm
+        year = datetime.year
+        month = datetime.month
+        day = datetime.day
+        
+        // Adjust month and year for Zeller's algorithm
+        IfCondition LessThan(month, 3) ThenBlock {
+            month = Add(month, 12)
+            year = Subtract(year, 1)
+        }
+        
+        century = Divide(year, 100)
+        year_of_century = Modulo(year, 100)
+        
+        weekday = Modulo(Add(Add(Add(day, Divide(Multiply(13, Add(month, 1)), 5)), year_of_century), 
+                            Add(Divide(year_of_century, 4), Divide(century, 4))), 7)
+        
+        // Convert to Sunday=0, Monday=1, ... Saturday=6
+        weekday = Modulo(Add(weekday, 5), 7)
+        
+        ReturnValue(weekday)
+    }
+}
+
+Function.Time.Internal.CalculateYearDay {
+    Input: (datetime: DateTime)
+    Output: UInt16
+    Body: {
+        month_days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+        
+        // Adjust February for leap year
+        IfCondition Time.IsLeapYear(datetime.year) ThenBlock {
+            month_days[1] = 29
+        }
+        
+        day_of_year = datetime.day
+        
+        current_month = 1
+        WhileLoop LessThan(current_month, datetime.month) {
+            day_of_year = Add(day_of_year, month_days[Subtract(current_month, 1)])
+            current_month = Add(current_month, 1)
+        }
+        
+        ReturnValue(day_of_year)
+    }
+}

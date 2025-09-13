@@ -1,0 +1,209 @@
+{
+  "name": "AILANG",
+  "scopeName": "source.ailang",
+  "fileTypes": [
+    "ailang",
+    "ail"
+  ],
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#pools"
+    },
+    {
+      "include": "#functions"
+    },
+    {
+      "include": "#types"
+    },
+    {
+      "include": "#operators"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.doc.ailang",
+          "match": "//DOC:.*$"
+        },
+        {
+          "name": "comment.line.double-slash.complex.ailang",
+          "match": "//COM:.*$"
+        },
+        {
+          "name": "comment.line.double-slash.tag.ailang",
+          "match": "//TAG:.*$"
+        },
+        {
+          "name": "comment.line.double-slash.ailang",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.block.ailang",
+          "begin": "/\\*",
+          "end": "\\*/"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.ailang",
+          "match": "\\b(RunTask|PrintMessage|ReturnValue|IfCondition|ThenBlock|ElseBlock|ChoosePath|CaseOption|DefaultOption|WhileLoop|UntilCondition|ForEvery|in|TryBlock|CatchError|FinallyBlock|BreakLoop|ContinueLoop|HaltProgram|SendMessage|ReceiveMessage|EveryInterval)\\b"
+        },
+        {
+          "name": "keyword.pool.ailang",
+          "match": "\\b(FixedPool|DynamicPool|TemporalPool|NeuralPool|KernelPool|ActorPool|SecurityPool|ConstrainedPool|FilePool|SubPool)\\b"
+        },
+        {
+          "name": "keyword.system.ailang",
+          "match": "\\b(Hardware|Syscall|Interrupt|Register|Memory|PhysicalAddress|VirtualAddress|EnableInterrupts|DisableInterrupts|Halt|Wait|PageTable|VirtualMemory|Cache|TLB|MemoryBarrier|InterruptHandler|DeviceDriver|Bootloader|KernelEntry|AtomicRead|AtomicWrite|MMIORead|MMIOWrite|PortRead|PortWrite)\\b"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.ailang",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.ailang",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.hex.ailang",
+          "match": "\\b0[xX][0-9a-fA-F]+\\b"
+        },
+        {
+          "name": "constant.numeric.decimal.ailang",
+          "match": "\\b[0-9]+(\\.[0-9]+)?([eE][+-]?[0-9]+)?\\b"
+        }
+      ]
+    },
+    "pools": {
+      "patterns": [
+        {
+          "name": "meta.pool.definition.ailang",
+          "begin": "\\b(FixedPool|DynamicPool|TemporalPool|NeuralPool|KernelPool|ActorPool|SecurityPool|ConstrainedPool|FilePool|SubPool)\\s*\\.\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*\\{",
+          "end": "\\}",
+          "beginCaptures": {
+            "1": {
+              "name": "keyword.pool.ailang"
+            },
+            "2": {
+              "name": "entity.name.type.pool.ailang"
+            }
+          },
+          "patterns": [
+            {
+              "name": "string.quoted.double.key.ailang",
+              "match": "\"[^\"]*\":"
+            },
+            {
+              "name": "keyword.attribute.ailang",
+              "match": "\\b(Initialize|CanChange|CanBeNull|Range|MaximumLength|MinimumLength|ElementType)\\b"
+            },
+            {
+              "include": "#strings"
+            },
+            {
+              "include": "#numbers"
+            },
+            {
+              "include": "#types"
+            }
+          ]
+        }
+      ]
+    },
+    "functions": {
+      "patterns": [
+        {
+          "name": "meta.function.ailang",
+          "begin": "\\b(Function|SubRoutine|Lambda)\\s*\\.\\s*([a-zA-Z_][a-zA-Z0-9_]*(?:\\.[a-zA-Z_][a-zA-Z0-9_]*)*)\\s*\\{",
+          "end": "\\}",
+          "beginCaptures": {
+            "1": {
+              "name": "keyword.function.ailang"
+            },
+            "2": {
+              "name": "entity.name.function.ailang"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#keywords"
+            },
+            {
+              "include": "#types"
+            },
+            {
+              "include": "#strings"
+            },
+            {
+              "include": "#numbers"
+            }
+          ]
+        },
+        {
+          "name": "meta.dotted.identifier.ailang",
+          "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*(\\.[a-zA-Z_][a-zA-Z0-9_]*)+\\b"
+        }
+      ]
+    },
+    "types": {
+      "patterns": [
+        {
+          "name": "storage.type.ailang",
+          "match": "\\b(Integer|FloatingPoint|Text|Boolean|Address|Array|Map|Tuple|Record|OptionalType|ConstrainedType|Any|Void|Byte|Word|DWord|QWord|UInt8|UInt16|UInt32|UInt64|Int8|Int16|Int32|Int64|Pointer)\\b"
+        },
+        {
+          "name": "meta.type.parameter.ailang",
+          "begin": "\\b(Array|Map|Tuple|Pointer|OptionalType|Function)\\s*\\[(?!\\])",
+          "end": "\\]",
+          "patterns": [
+            {
+              "include": "#types"
+            }
+          ]
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.arithmetic.ailang",
+          "match": "\\b(Add|Subtract|Multiply|Divide|Power|Modulo|SquareRoot|AbsoluteValue)\\b"
+        },
+        {
+          "name": "keyword.operator.comparison.ailang",
+          "match": "\\b(GreaterThan|LessThan|GreaterEqual|LessEqual|EqualTo|NotEqual)\\b"
+        },
+        {
+          "name": "keyword.operator.logical.ailang",
+          "match": "\\b(And|Or|Not|Xor|Implies)\\b"
+        }
+      ]
+    }
+  }
+}

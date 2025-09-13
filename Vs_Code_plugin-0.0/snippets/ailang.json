@@ -1,0 +1,50 @@
+{
+  "Print Message": {
+    "prefix": "print",
+    "body": [
+      "PrintMessage(\"$1\")"
+    ],
+    "description": "Print a message"
+  },
+  "Fixed Pool": {
+    "prefix": "fixedpool",
+    "body": [
+      "FixedPool.$1 {",
+      "    \"$2\": Initialize-$3, CanChange-$4",
+      "}"
+    ],
+    "description": "Create a fixed pool"
+  },
+  "Function Definition": {
+    "prefix": "function",
+    "body": [
+      "Function.$1 {",
+      "    Input: ($2)",
+      "    Output: $3",
+      "    Body: {",
+      "        $4",
+      "        ReturnValue($5)",
+      "    }",
+      "}"
+    ],
+    "description": "Define a function"
+  },
+  "If Condition": {
+    "prefix": "if",
+    "body": [
+      "IfCondition $1 ThenBlock {",
+      "    $2",
+      "}"
+    ],
+    "description": "If condition block"
+  },
+  "While Loop": {
+    "prefix": "while",
+    "body": [
+      "WhileLoop $1 {",
+      "    $2",
+      "}"
+    ],
+    "description": "While loop"
+  }
+}

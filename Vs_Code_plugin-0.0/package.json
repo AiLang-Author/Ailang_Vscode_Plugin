@@ -1,0 +1,129 @@
+{
+  "name": "ailang-language-support",
+  "displayName": "AILang Language Support",
+  "description": "Official language support for AILang - The World's First Cache-Aware Systems Programming Language",
+  "version": "1.0.0",
+  "publisher": "ailang-team",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/ailang"
+  },
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets",
+    "Other"
+  ],
+  "keywords": [
+    "ailang",
+    "systems programming",
+    "cache-aware",
+    "virtual memory"
+  ],
+  "activationEvents": [
+    "onLanguage:ailang",
+    "onCommand:ailang.compile",
+    "onCommand:ailang.compileKernel",
+    "*"
+  ],
+  "main": "./extension.js",  
+  "contributes": {
+    "languages": [
+      {
+        "id": "ailang",
+        "aliases": [
+          "AILang",
+          "ailang",
+          "AiLang"
+        ],
+        "extensions": [
+          ".ailang",
+          ".ail"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./icons/ailang-light.svg",
+          "dark": "./icons/ailang-dark.svg"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "ailang",
+        "scopeName": "source.ailang",
+        "path": "./syntaxes/ailang.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "ailang.compile",
+        "title": "Compile AILang File",
+        "category": "AILang",
+        "icon": "$(play)"
+      },
+      {
+        "command": "ailang.compileKernel",
+        "title": "Compile AILang (Kernel Mode)",
+        "category": "AILang",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "ailang.showAST",
+        "title": "Show AST",
+        "category": "AILang"
+      },
+      {
+        "command": "ailang.validate",
+        "title": "Validate Syntax",
+        "category": "AILang"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "ailang.compile",
+        "key": "f5",
+        "when": "editorTextFocus && resourceExtname =~ /\\.(ailang|ail)$/"
+      },
+      {
+        "command": "ailang.compileKernel",
+        "key": "ctrl+f5",
+        "when": "editorTextFocus && resourceExtname =~ /\\.(ailang|ail)$/"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "resourceExtname =~ /\\.(ailang|ail)$/",
+          "command": "ailang.compile",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "ailang.compile",
+          "when": "editorLangId == ailang"
+        },
+        {
+          "command": "ailang.compileKernel",
+          "when": "editorLangId == ailang"
+        }
+      ]
+    },
+    "snippets": [
+      {
+        "language": "ailang",
+        "path": "./snippets/ailang.json"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm install",
+    "package": "vsce package"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.0"
+  },
+  "devDependencies": {}
+}
